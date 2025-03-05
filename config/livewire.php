@@ -34,5 +34,5 @@ return [
     'legacy_model_binding' => false,
     'inject_assets' => true,
     'inject_morph_markers' => true,
-    'navigate' => false,
+    'navigate' => true,
 ];
