@@ -35,7 +35,7 @@ class WordSearch extends Component
             $this->grid = $this->game->grid;
             $this->difficulty = $this->game->difficulty;
             $this->gridSize = $this->game->grid_size;
-            $this->timer = $this->game->timer;
+            $this->timer = $this->game->timer ?? 0;
             $this->loadSavedProgress();
         } else {
             // Start new game
@@ -82,6 +82,7 @@ class WordSearch extends Component
             'grid' => $this->grid,
             'difficulty' => 'easy',
             'grid_size' => 8,
+            'timer' => $this->timer,
         ]);
     }
 
@@ -132,6 +133,9 @@ class WordSearch extends Component
                 'coordinates' => $selection
             ]);
 
+            // Highlight the found word in the grid
+            $this->highlightFoundWord($selection);
+
             if (count($this->foundWords) === count($this->words())) {
                 $this->completeGame();
             }
@@ -149,6 +153,13 @@ class WordSearch extends Component
             $word .= $this->grid[$coordinates[0]][$coordinates[1]];
         }
         return $word;
+    }
+
+    private function highlightFoundWord(array $selection): void
+    {
+        foreach ($selection as $coord) {
+            $this->grid[$coord[0]][$coord[1]] = '<span class="selected">' . $this->grid[$coord[0]][$coord[1]] . '</span>';
+        }
     }
 
     private function completeGame()

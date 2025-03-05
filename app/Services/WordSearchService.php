@@ -6,6 +6,8 @@ class WordSearchService
 {
     private array $grid = [];
     private array $wordLocations = [];
+    private array $foundWords = [];
+    private array $selectedWords = [];
     private array $directions = [
         'horizontal' => [0, 1],
         'vertical' => [1, 0],
@@ -16,6 +18,12 @@ class WordSearchService
         'diagonal-up' => [-1, 1],
         'diagonal-down' => [1, -1]
     ];
+
+    public function __construct(array $foundWords = [], array $selectedWords = [])
+    {
+        $this->foundWords = $foundWords;
+        $this->selectedWords = $selectedWords;
+    }
 
     public function generateGrid(array $words, int $size): array
     {
@@ -55,6 +63,16 @@ class WordSearchService
 
         // Fill remaining spaces with random letters that don't create unintended words
         $this->fillEmptySpaces($words);
+
+        // Highlight completed words
+        foreach ($this->wordLocations as $word => $location) {
+            if (in_array($word, $this->foundWords)) {
+                $this->highlightWord($location, 'highlight');
+            }
+            if (in_array($word, $this->selectedWords)) {
+                $this->highlightWord($location, 'selected');
+            }
+        }
 
         return [
             'grid' => $this->grid,
@@ -224,6 +242,15 @@ class WordSearchService
                     }
                 }
             }
+        }
+    }
+
+    private function highlightWord(array $location, string $type): void
+    {
+        // Logic to highlight the word in the grid
+        foreach ($location as $coord) {
+            $colorClass = $type === 'selected' ? 'selected' : 'highlight';
+            $this->grid[$coord[0]][$coord[1]] = '<span class="' . $colorClass . '">' . $this->grid[$coord[0]][$coord[1]] . '</span>';
         }
     }
 }
