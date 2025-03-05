@@ -40,6 +40,7 @@ return new class extends Migration
             $table->foreignId('game_id')->constrained()->cascadeOnDelete();
             $table->foreignId('word_id')->constrained()->cascadeOnDelete();
             $table->integer('time_taken');
+            $table->json('coordinates')->nullable();
             $table->timestamps();
         });
     }

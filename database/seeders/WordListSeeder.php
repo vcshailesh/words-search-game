@@ -18,16 +18,16 @@ class WordListSeeder extends Seeder
 
         // Easy words organized in related groups for better grid placement
         $easyWords = [
-            'CAT',
-            'DOG',
-            'SUN',
-            'RUN',
-            'HAT',
-            'MAP',
-            'BUG',
-            'CUP',
-            'PEN',
-            'BOX'
+            'PINT',
+            'PEST',
+            'ECHO',
+            'FORGE',
+            'VITE',
+            'SAIL',
+            'DUSK',
+            'PULSE',
+            'SCOUT',
+            'REVERB'
         ];
 
         foreach ($easyWords as $word) {

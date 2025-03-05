@@ -23,6 +23,10 @@
                             <span x-text="formatTime(time)">00:00</span>
                         </div>
                     </div>
+                    <!-- Reset Game Button -->
+                    <button wire:click="resetGame" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                        Reset Game
+                    </button>
                 </div>
 
                 <!-- Game Grid -->
@@ -30,13 +34,15 @@
                     <div class="grid gap-1 w-fit mx-auto" style="grid-template-columns: repeat({{ $gridSize }}, minmax(0, 1fr));"
                         x-data="wordSelection()"
                         @mouseup="checkSelection($wire)"
-                        @touchend="checkSelection($wire)">
+                        @touchend="checkSelection($wire)"
+                        @word-found.window="handleWordFound($event.detail)">
                         @foreach ($grid as $i => $row)
                             @foreach ($row as $j => $letter)
-                                <div class="w-10 h-10 flex items-center justify-center text-lg font-semibold rounded-md transition-colors"
+                                <div class="w-10 h-10 flex items-center justify-center text-lg font-semibold rounded-md transition-colors cursor-pointer select-none"
                                     :class="{
-                                        'bg-emerald-100': isSelected({{ $i }}, {{ $j }}),
-                                        'bg-gray-50 hover:bg-gray-100': !isSelected({{ $i }}, {{ $j }})
+                                        'bg-blue-200 text-blue-800 scale-105 shadow-md': isSelected({{ $i }}, {{ $j }}),
+                                        'bg-green-200 text-green-800': isFoundWord({{ $i }}, {{ $j }}),
+                                        'hover:bg-gray-100': !isSelected({{ $i }}, {{ $j }}) && !isFoundWord({{ $i }}, {{ $j }})
                                     }"
                                     @mousedown="startSelection({{ $i }}, {{ $j }})"
                                     @mouseover="updateSelection({{ $i }}, {{ $j }})"
@@ -94,17 +100,42 @@
             return {
                 selecting: false,
                 selection: [],
+                foundCoordinates: new Set(),
+
+                init() {
+                    // Initialize with any previously found words
+                    @this.foundWordCoordinates.forEach(coords => {
+                        coords.forEach(([i, j]) => {
+                            this.foundCoordinates.add(`${i}-${j}`);
+                        });
+                    });
+                },
+
+                handleWordFound(detail) {
+                    const { coordinates } = detail;
+                    coordinates.forEach(([i, j]) => {
+                        this.foundCoordinates.add(`${i}-${j}`);
+                    });
+                },
+
                 startSelection(i, j) {
                     this.selecting = true;
                     this.selection = [[i, j]];
                 },
+
                 updateSelection(i, j) {
                     if (!this.selecting) return;
                     
-                    if (!this.selection.some(([x, y]) => x === i && y === j)) {
+                    // Only add if it's adjacent to the last selected cell
+                    const last = this.selection[this.selection.length - 1];
+                    const dx = Math.abs(last[0] - i);
+                    const dy = Math.abs(last[1] - j);
+                    
+                    if ((dx <= 1 && dy <= 1) && !this.isSelected(i, j)) {
                         this.selection.push([i, j]);
                     }
                 },
+
                 handleTouchMove(event, i, j) {
                     const touch = event.touches[0];
                     const element = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -112,17 +143,58 @@
                         this.updateSelection(i, j);
                     }
                 },
+
                 checkSelection($wire) {
                     if (this.selection.length > 0) {
-                        $wire.checkSelection(this.selection);
+                        $wire.checkSelection(this.selection).then(result => {
+                            if (result) {
+                                this.selection.forEach(([i, j]) => {
+                                    this.foundCoordinates.add(`${i}-${j}`);
+                                });
+                            }
+                        });
                     }
                     this.selecting = false;
                     this.selection = [];
                 },
+
                 isSelected(i, j) {
                     return this.selection.some(([x, y]) => x === i && y === j);
+                },
+
+                isFoundWord(i, j) {
+                    return this.foundCoordinates.has(`${i}-${j}`);
                 }
             }
         }
     </script>
+
+    <style>
+        /* Add these styles to your CSS */
+        .scale-105 {
+            transform: scale(1.05);
+            transition: all 0.15s ease;
+        }
+
+        .shadow-md {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* Prevent text selection */
+        .select-none {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Add animation for found words */
+        @keyframes highlight {
+            0% { background-color: rgba(167, 243, 208, 0); }
+            50% { background-color: rgba(167, 243, 208, 1); }
+            100% { background-color: rgba(167, 243, 208, 0.5); }
+        }
+
+        .bg-green-200 {
+            animation: highlight 0.5s ease-in-out;
+        }
+    </style>
 </div> 

@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FoundWord extends Model
 {
-    protected $fillable = ['game_id', 'word_id', 'time_taken'];
+    protected $fillable = ['game_id', 'word_id', 'time_taken', 'coordinates'];
+
+    protected $casts = [
+        'coordinates' => 'array'
+    ];
 
     public function game(): BelongsTo
     {
